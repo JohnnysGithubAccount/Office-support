@@ -24,7 +24,10 @@ file_prefix = st.sidebar.text_input(
 
 save_option = st.sidebar.selectbox(
     "Chọn cách lưu:",
-    options=["Nhiều file", "Một file"]
+    options=[
+        "Nhiều file",
+        "Một file (Lỗi format chưa sửa)"
+    ]
 )
 
 isTest = st.sidebar.selectbox(

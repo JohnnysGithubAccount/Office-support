@@ -18,41 +18,35 @@ def fill_invitations(template_path: str, data, key_format: str) -> Document:
         for key, value in data.items():
             if " " not in str(key_format):
                 key = key.replace(' ', '_')
-            key_format = key_format.replace("_", "")
-            key = key_format.replace("Keyword", key)
+
+            key = key_format.replace(key_format[1:len(key_format) - 1], key)
             opening_bracket = key_format[0]
             closing_bracket = key_format[-1]
 
             if key in paragraph.text:
                 temp = ""
                 for run in paragraph.runs:
-                    # print(f"Run text:", run.text)
                     if run.text == opening_bracket or temp != "":
-                        # print("Temp open:", temp)
                         temp += run.text
                         run.clear()
 
-                    if opening_bracket in run.text and closing_bracket not in run.text:
-                        # print("Temp open 2:", temp)
+                    if run.text.count(opening_bracket) > run.text.count(closing_bracket):
                         temp_2 = run.text.split(opening_bracket)
-                        # print("Split list:", temp_2)
                         run.text = temp_2[0]
-                        # print("Curr run: ", run.text)
                         temp += (opening_bracket + temp_2[1])
 
-                    if opening_bracket in run.text and closing_bracket in run.text:
+                    if closing_bracket in temp and temp.count(opening_bracket) == temp.count(closing_bracket):
+                        run.text = temp + run.text
+                        if temp.count(opening_bracket) > 1:
+                            for key_, value_ in data.items():
+                                run.text = run.text.replace(f"{opening_bracket}{key_}{closing_bracket}", str(value_))
+                        else:
+                            run.text = run.text.replace(f"{key}", str(value))
+                        temp = ""
+
+                    if key in run.text:
                         run.text = run.text.replace(f"{key}", str(value))
 
-                    if closing_bracket in temp:
-                        # print("Temp closing:", temp)
-                        run.text = temp + run.text
-                        # print("Addition:", run.text)
-                        run.text = run.text.replace(f"{key}", str(value))
-                        # print("End:", run.text)
-                        temp = ""
-                    # print()
-                    # print(paragraph.text)
-                    # print("-" * 50)
 
     # Process tables
     for table in doc.tables:
@@ -63,30 +57,35 @@ def fill_invitations(template_path: str, data, key_format: str) -> Document:
                     for key, value in data.items():
                         if " " not in str(key_format):
                             key = key.replace(' ', '_')
-                        key_format = key_format.replace("_", "")
-                        key = key_format.replace("Keyword", key)
+
+                        key = key_format.replace(key_format[1:len(key_format) - 1], key)
                         opening_bracket = key_format[0]
                         closing_bracket = key_format[-1]
+                        
+                        if key in paragraph.text:
+                            temp = ""
+                            for run in paragraph.runs:
+                                if run.text == opening_bracket or temp != "":
+                                    temp += run.text
+                                    run.clear()
 
-                        temp = ""
-                        for run in paragraph.runs:
-                            if opening_bracket in run.text and closing_bracket in run.text:
-                                run.text = run.text.replace(f"{key}", str(value))
-                                continue
+                                if run.text.count(opening_bracket) > run.text.count(closing_bracket):
+                                    temp_2 = run.text.split(opening_bracket)
+                                    run.text = temp_2[0]
+                                    temp += (opening_bracket + temp_2[1])
 
-                            if run.text == opening_bracket or temp != "":
-                                temp += run.text
-                                run.clear()
+                                if closing_bracket in temp and temp.count(opening_bracket) == temp.count(
+                                        closing_bracket):
+                                    run.text = temp + run.text
+                                    if temp.count(opening_bracket) > 1:
+                                        for key_, value_ in data.items():
+                                            run.text = run.text.replace(f"{opening_bracket}{key_}{closing_bracket}", str(value_))
+                                    else:
+                                        run.text = run.text.replace(f"{key}", str(value))
+                                    temp = ""
 
-                            if opening_bracket in run.text and closing_bracket not in run.text:
-                                temp_2 = run.text.split(opening_bracket)
-                                run.text = temp_2[0]
-                                temp += (opening_bracket + temp_2[1])
-
-                            if closing_bracket in temp:
-                                run.text = temp + run.text
-                                run.text = run.text.replace(f"{key}", str(value))
-                                temp = ""
+                                if key in run.text:
+                                    run.text = run.text.replace(f"{key}", str(value))
     return doc
 
 
