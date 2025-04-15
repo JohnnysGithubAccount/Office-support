@@ -61,7 +61,7 @@ def fill_invitations(template_path: str, data, key_format: str) -> Document:
                         key = key_format.replace(key_format[1:len(key_format) - 1], key)
                         opening_bracket = key_format[0]
                         closing_bracket = key_format[-1]
-                        
+
                         if key in paragraph.text:
                             temp = ""
                             for run in paragraph.runs:
