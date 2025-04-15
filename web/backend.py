@@ -16,10 +16,8 @@ def fill_invitations(template_path: str, data, key_format: str) -> Document:
     doc = Document(template_path)
     for paragraph in doc.paragraphs:
         for key, value in data.items():
-            print('key_format:', key_format)
             if " " not in str(key_format):
                 key = key.replace(' ', '_')
-                print("Jumped in:", key)
             key_format = key_format.replace("_", "")
             key = key_format.replace("Keyword", key)
             opening_bracket = key_format[0]
@@ -63,9 +61,8 @@ def fill_invitations(template_path: str, data, key_format: str) -> Document:
                 for paragraph in cell.paragraphs:  # Iterate through paragraphs inside the cell
                     # Iterate through runs inside the paragraph
                     for key, value in data.items():
-                        if "_" in key_format:
+                        if " " not in str(key_format):
                             key = key.replace(' ', '_')
-                            print("Jumped in:", key)
                         key_format = key_format.replace("_", "")
                         key = key_format.replace("Keyword", key)
                         opening_bracket = key_format[0]
