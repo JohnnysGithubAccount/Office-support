@@ -28,7 +28,7 @@ save_option = st.sidebar.selectbox(
 )
 
 isTest = st.sidebar.selectbox(
-    "Có đang chạy thử không (Dùng để test thử trước 1 file):",
+    "Có muốn test thử trước 1 file không:",
     options=["Không", "Có"]
 )
 
