@@ -28,8 +28,8 @@ save_option = st.sidebar.selectbox(
 )
 
 isTest = st.sidebar.selectbox(
-    "Có đang chạy thử không:",
-    options=["Có", "Không"]
+    "Có đang chạy thử không (Dùng để test thử trước 1 file):",
+    options=["Không", "Có"]
 )
 
 percentage_text = st.sidebar.empty()
