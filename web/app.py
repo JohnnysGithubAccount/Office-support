@@ -3,7 +3,7 @@ import os
 import shutil
 import zipfile
 from io import BytesIO
-from backend import get_data, fill_invitations, merge_documents
+from backend import get_data, fill_invitations, merge_documents, combine_all_docx
 import time
 import atexit
 
@@ -26,7 +26,7 @@ save_option = st.sidebar.selectbox(
     "Chọn cách lưu:",
     options=[
         "Nhiều file",
-        "Một file (Lỗi format chưa sửa)"
+        "Một file (Để in)"
     ]
 )
 
@@ -70,11 +70,13 @@ if uploaded_template and uploaded_excel:
 
     iterations, df, columns = get_data(excel_path)
 
-    selected_columns_for_filename = st.sidebar.multiselect(
-        "Chọn các cột để thêm vào tên file:",
-        options=columns,
-        default=[]  # Không chọn cột nào mặc định
-    )
+    selected_columns_for_filename = []
+    if save_option == "Nhiều file":
+        selected_columns_for_filename = st.sidebar.multiselect(
+            "Chọn các cột để thêm vào tên file:",
+            options=columns,
+            default=[]  # Không chọn cột nào mặc định
+        )
 
     # Thư mục đầu ra
     output_folder = os.path.join(TEMP_DIR, "results")
@@ -92,6 +94,7 @@ if uploaded_template and uploaded_excel:
 
         # Xử lý từng dòng dữ liệu
         documents = []
+        file_names = []
 
         if save_option == "Nhiều file":
             # Clear outputfolder
@@ -108,12 +111,18 @@ if uploaded_template and uploaded_excel:
 
             # Gọi hàm fill_invitations để xử lý từng tài liệu
             doc = fill_invitations(template_path, data, selected_placeholder)
-            if save_option == "Nhiều file":
-                file_suffix = "_".join([str(row[col]) for col in selected_columns_for_filename if col in row.index])
-                file_path = os.path.join(output_folder, f"{file_prefix}{file_suffix}.docx")
-                # file_path = os.path.join(output_folder, f"{file_prefix}{idx + 1}.docx")
-                doc.save(file_path)
-            else:
+
+            file_suffix = "_".join([str(row[col]) for col in selected_columns_for_filename if col in row.index])
+            file_path = os.path.join(output_folder,
+                                     f"{file_prefix}"
+                                     f"{('_' + f'{idx}') if save_option == 'Một file (Để in)' else ''}"
+                                     f"{'_' if file_suffix == '' else ''}"
+                                     f"{file_suffix}.docx")
+            file_names.append(file_path)
+            # file_path = os.path.join(output_folder, f"{file_prefix}{idx + 1}.docx")
+            doc.save(file_path)
+
+            if save_option != "Nhiều file":
                 documents.append(doc)
 
             # Cập nhật thanh tiến trình
@@ -150,11 +159,20 @@ if uploaded_template and uploaded_excel:
             )
         else:
             # Merge all documents into a single document
-            merged_doc = merge_documents(documents)
+            # merged_doc = merge_documents(documents)
+            #
+            # # Save the merged document
+            # merged_output_path = os.path.join(output_folder, "merged_document.docx")
+            # merged_doc.save(merged_output_path)
 
-            # Save the merged document
-            merged_output_path = os.path.join(output_folder, "merged_document.docx")
-            merged_doc.save(merged_output_path)
+            merged_output_path = f"{file_prefix}.docx"
+            print(len(file_names))
+
+            combine_all_docx(
+                filename_master=file_names[0]
+,               files_list=file_names[1:],
+                output_path=merged_output_path
+            )
 
             # Đọc file đã lưu để chuẩn bị tải xuống
             with open(merged_output_path, "rb") as f:

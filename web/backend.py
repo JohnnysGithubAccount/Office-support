@@ -1,15 +1,24 @@
 import pandas as pd
 from docx import Document
-from typing import List, Tuple, Dict
-import os
-import datetime
-import time
-from tqdm import tqdm
+from typing import List, Tuple
+from docxcompose.composer import Composer
+from docx import Document as Document_compose
+#filename_master is name of the file you want to merge the docx file into
 
 
 def get_data(data_path: str) -> Tuple[int, pd.DataFrame, List[str]]:
     df = pd.read_excel(data_path, engine='openpyxl')
     return len(df), df, df.columns.tolist()
+
+
+def combine_all_docx(filename_master,files_list, output_path: str = "combined_file.docx"):
+    number_of_sections=len(files_list)
+    master = Document_compose(filename_master)
+    composer = Composer(master)
+    for i in range(0, number_of_sections):
+        doc_temp = Document_compose(files_list[i])
+        composer.append(doc_temp)
+    composer.save(output_path)
 
 
 def fill_invitations(template_path: str, data, key_format: str) -> Document:
