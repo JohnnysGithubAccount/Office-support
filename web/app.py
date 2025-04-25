@@ -68,13 +68,20 @@ if uploaded_template and uploaded_excel:
     with open(excel_path, "wb") as f:
         f.write(uploaded_excel.getbuffer())
 
+    iterations, df, columns = get_data(excel_path)
+
+    selected_columns_for_filename = st.sidebar.multiselect(
+        "Chọn các cột để thêm vào tên file:",
+        options=columns,
+        default=[]  # Không chọn cột nào mặc định
+    )
+
     # Thư mục đầu ra
     output_folder = os.path.join(TEMP_DIR, "results")
     os.makedirs(output_folder, exist_ok=True)
 
     if st.button("Bắt đầu xử lý"):
         # Đọc file Excel để lấy dữ liệu
-        iterations, df, columns = get_data(excel_path)
         if isTest == "Có":
             iterations = 1
 
@@ -102,7 +109,9 @@ if uploaded_template and uploaded_excel:
             # Gọi hàm fill_invitations để xử lý từng tài liệu
             doc = fill_invitations(template_path, data, selected_placeholder)
             if save_option == "Nhiều file":
-                file_path = os.path.join(output_folder, f"{file_prefix}{idx + 1}.docx")
+                file_suffix = "_".join([str(row[col]) for col in selected_columns_for_filename if col in row.index])
+                file_path = os.path.join(output_folder, f"{file_prefix}{file_suffix}.docx")
+                # file_path = os.path.join(output_folder, f"{file_prefix}{idx + 1}.docx")
                 doc.save(file_path)
             else:
                 documents.append(doc)
